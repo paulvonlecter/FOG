@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.1/css/bootstrap.min.css" integrity="sha512-T584yQ/tdRR5QwOpfvDfVQUidzfgc2339Lc8uBDtcp/wYu80d7jwBgAxbyMh0a9YM9F8N3tdErpFI8iaGx6x5g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha512-SfTiTlX6kk+qitfevl/7LibUOeJWlt9rbyDn92a1DqWOw9vWG2MFoays0sgObmWazO5BQPiFucnnEAjpAB+/Sw==" crossorigin="anonymous" />
+<title>Lecter's Falling Overlay Generator</title>
+</head>
+<body>
+<header class="jumbotron rounded-0">
+    <div class="container">
+        <h1>Lecter's FOG - Falling Overlay Generator</h1>
+        <p class="m-0">Инструмент позволяет сгенерировать HTML-файл с&nbsp;заданными пользователем падающими изображениями для&nbsp;использования в&nbsp;качестве &laquo;Браузерного источника&raquo; в&nbsp;программах для&nbsp;стриминга (OBS, Xsplit и&nbsp;т.&nbsp;д.)</p>
+    </div><!--/container-->
+</header><!--/jumbotron-->
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <form>
+                <div class="card">
+                    <header class="card-header">
+                        <div class="form-group m-0">
+                            <label for="images-count">Общее количество элементов</label>
+                            <input type="number" class="form-control" min="1" id="images-count" value="100" placeholder="Введите количество картинок">
+                        </div><!--/form-group-->
+                    </header><!--/card-header-->
+                    <div class="card-body row">
+                        <div class="col-sm-3">
+                            <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                                <h5>Источник изображений</h5>
+                                <a class="nav-link active" data-toggle="pill" href="#generate-from-urls-pane" role="tab">Ссылки</a>
+                                <a class="nav-link disabled" data-toggle="pill" href="#generate-from-files-pane" role="tab">Файлы</a>
+                            </div><!--/nav-->
+                        </div><!--/col-->
+                        <div class="col-sm-9">
+                            <div class="tab-content">
+                                <div class="tab-pane fade show active" id="generate-from-urls-pane" data-type="url" role="tabpanel">
+                                    <button type="button" class="btn btn-success w-100 mb-3" id="add-url-field">
+                                        <i class="fa fa-plus"></i>
+                                        Добавить поле
+                                    </button>
+                                    <div class="input-group mb-3">
+                                        <input type="url" class="form-control url-field" required placeholder="Вставьте прямую ссылку на изображение: https://cdn.discordapp.com/attachments/76746327...123123123/icon.png">
+                                        <div class="input-group-append">
+                                            <button class="btn btn-outline-danger delete-url-row-button" type="button">
+                                                <i class="fa fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div><!--/input-group-->
+                                </div><!--/tab-pane-->
+                                <div class="tab-pane fade" data-type="file" id="generate-from-files-pane" role="tabpanel">
+                                    <button type="button" class="btn btn-success w-100 mb-3" id="add-file-field">
+                                        <i class="fa fa-plus"></i>
+                                        Добавить поле
+                                    </button>
+                                    <div class="input-group mb-3">
+                                        <input type="file" class="form-control p-1 file-field" required>
+                                        <div class="input-group-append">
+                                            <button class="btn btn-outline-danger delete-file-row-button" type="button">
+                                                <i class="fa fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div><!--/input-group-->
+                                </div><!--/tab-pane-->
+                            </div><!--/tab-content-->
+                        </div><!--/col-->
+                    </div><!--/card-body-->
+                    <footer class="card-footer">
+                        <button type="button" class="btn btn-primary" id="generate">
+                            <i class="fa fa-fw fa-gears"></i>
+                            Генерировать!
+                        </button>
+                        <button type="button" class="btn btn-info" disabled id="downloadButton">
+                            <i class="fa fa-fw fa-download"></i>
+                            Скачать
+                        </button>
+                    </footer><!--/card-footer-->
+                </div><!--/card-->
+            </form>
+        </div><!--/col-->
+    </div><!--/row-->
+    <div class="row mt-5">
+        <h2 class="w-100 text-center">Предварительный просмотр</h2>
+        <div class="col-12">
+            <div class="embed-responsive embed-responsive-21by9 border">
+                <iframe border="0" id="previewIFrame" class="embed-responsive-item"></iframe>
+            </div><!--/embed-responsive-->
+        </div><!--/col-->
+    </div><!--/row-->
+</div><!--/container-->
+<footer class="page-footer bg-dark text-white py-5 mt-5">
+    <p class="m-0 text-center" data-langkey="metadata_footer"><em>Made with <span class="sr-only">love</span><i class="fa fa-heart"></i> by <a class="text-light text-decoration-none" target="_blank" href="https://paulvonlecter.name/">Paul von Lecter</a> in 2021 for streamers</em></p>
+</footer>
+<script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.1/js/bootstrap.bundle.min.js" integrity="sha512-mULnawDVcCnsk9a4aG1QLZZ6rcce/jSzEGqUkeOLy0b6q0+T6syHrxlsAGH7ZVoqC93Pd0lBqd6WguPWih7VHA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+// Константы
+// Стили
+const HEAD_STYLE = `html, body { padding: 0; margin: 0; width: 100vw; height: 100vh; position: relative; overflow: hidden; }
+.snowflake { --size: 1vh; width: var(--size); height: var(--size); background-size: contain; position: absolute; top: -5vh; }
+@keyframes snowfall {
+    0% { transform: translate3d(var(--left-ini), 0, 0); }
+    100% { transform: translate3d(var(--left-end), 110vh, 0); }
+}
+.snowflake:nth-child(6n) { filter: blur(1px); }`;
+// Функции
+const JS_FUNCS = `function rand(min, max) { min = Math.ceil(min); max = Math.floor(max); return Math.floor(Math.random() * (max - min + 1) + min); }
+function spawnSnowflakes() {
+    let back = snowflakesArr[rand(0, snowflakesArr.length - 1)];
+    let snowflakeElement = document.createElement('div');
+    snowflakeElement.setAttribute('class', 'snowflake');
+    snowflakeElement.setAttribute('style', '--size:'+(rand(0,5)*0.2*3)+'vw; --left-ini:'+(rand(0,20)-10)+'vw; --left-end:'+(rand(0,20)-10)+'vw; left:'+rand(0, 100)+'vw; animation:snowfall '+(5+rand(0,10))+'s linear infinite; animation-delay:-'+rand(0, 10)+'s; background-image:url("'+snowflakesArr[rand(0, snowflakesArr.length - 1)]+'")');
+    document.body.prepend(snowflakeElement);
+}
+window.onload = function () {
+    for (var i = 0; i < LIMIT; i++) {
+        spawnSnowflakes();
+    }
+};`;
+// Глобальная переменная
+let fileString = '';
+let fileDataURIs = [];
+// Функции
+function deleteUrlRow(evt) {
+    if($('.delete-url-row-button').length > 1) {
+        $(evt.currentTarget).parent().parent().detach();
+    } else {
+        evt.preventDefault();
+        return false;
+    }
+}
+function deleteFileRow(evt) {
+    if($('.delete-file-row-button').length > 1) {
+        $(evt.currentTarget).parent().parent().detach();
+    } else {
+        evt.preventDefault();
+        return false;
+    }
+}
+// Скачивание файла
+function download(filename, text) {
+    var element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+    element.setAttribute('download', filename);
+
+    element.style.display = 'none';
+    document.body.appendChild(element);
+
+    element.click();
+
+    document.body.removeChild(element);
+}
+// Синхронизация файлов и их Data-URI
+function filechanged(evt) {
+    var reader = new FileReader();
+    reader.readAsDataURL(evt.currentTarget.files[0]);
+    reader.onload = function () {
+       fileDataURIs.push(reader.result);
+    };
+    reader.onerror = function (error) {
+        console.log('Error: ', error);
+    };
+}
+// События
+$('#add-url-field').click(function (evt) {
+    $('#generate-from-urls-pane .input-group:last-child')
+        .clone()
+        .appendTo('#generate-from-urls-pane');
+    $('.delete-url-row-button').click(deleteUrlRow);
+});
+$('.delete-url-row-button').click(deleteUrlRow);
+
+$('#add-file-field').click(function (evt) {
+    $('#generate-from-files-pane .input-group:last-child')
+        .clone()
+        .appendTo('#generate-from-files-pane');
+    $('.delete-file-row-button').click(deleteFileRow);
+});
+$('.delete-file-row-button').click(deleteFileRow);
+
+$('#generate').click(async function (evt) {
+    // Получить количество снежинок
+    let snowflakesLimit = $('#images-count').val()*1;
+    if(snowflakesLimit < 1) alert('!!!');
+    // Получить текстовое представление массива
+    let snowflakesArr_str = '';
+    switch ($('.tab-pane.active').attr('data-type')) {
+        // Когда предоставлены ссылки на картинки
+        case 'url':
+            console.log('Generating from list of URLs...');
+            $('.url-field').each(function (idx, el) {
+                console.log($(el).val());
+                let urlValue = $(el).val();
+                // Если строка не пустая, то добавить
+                if(urlValue.length > 0) {
+                    snowflakesArr_str = snowflakesArr_str + `"${urlValue}",`;
+                } else {
+                    // В противном случае остановить обработку
+                    alert('Пустая строка!');
+                    return false;
+                }
+            });
+            break;
+        // Когда надобавляли файлов
+        case 'file':
+            console.log('Generating from list of FILEs...');
+            fileDataURIs.forEach(function (item) {
+                snowflakesArr_str = snowflakesArr_str + `"${item}",`;
+            });
+            break;
+    }
+    // Добавить всё в строку для вставки в srcdoc
+    let file_str = `<html><head><style>${HEAD_STYLE}</style></head><body><script>var LIMIT = ${snowflakesLimit};var snowflakesArr = [${snowflakesArr_str}];${JS_FUNCS}` + '</s' + 'cript></body></html>';
+    console.log(file_str);
+    $('#previewIFrame').attr('srcdoc', file_str);
+    fileString = file_str;
+    $('#downloadButton').removeAttr('disabled');
+});
+$('#downloadButton').click(function (evt) {
+    if(fileString.length > 0)
+        download('falling_images.html', fileString);
+});
+$('input[type="file"]').on('change', function (evt) {
+    var reader = new FileReader();
+    reader.readAsDataURL(evt.currentTarget.files[0]);
+    reader.onload = function () {
+       fileDataURIs.push(reader.result);
+    };
+    reader.onerror = function (error) {
+        console.log('Error: ', error);
+    };
+});
+</script>
+</body>
+</html>
