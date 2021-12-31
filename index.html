@@ -99,7 +99,7 @@
 // Константы
 // Стили
 const HEAD_STYLE = `html, body { padding: 0; margin: 0; width: 100vw; height: 100vh; position: relative; overflow: hidden; }
-.snowflake { --size: 1vh; width: var(--size); height: var(--size); background-size: contain; position: absolute; top: -5vh; }
+.snowflake { --size: 1vh; width: var(--size); height: var(--size); background-size: contain; background-repeat: no-repeat; background-position: center; position: absolute; top: -5vh; }
 @keyframes snowfall {
     0% { transform: translate3d(var(--left-ini), 0, 0); }
     100% { transform: translate3d(var(--left-end), 110vh, 0); }
