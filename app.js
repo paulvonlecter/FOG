@@ -21,9 +21,18 @@ window.onload = function () {
         spawnSnowflakes();
     }
 };`;
-// Глобальная переменная
-let fileString = '';
 // Функции
+// Доступность хранилища
+function storageAvailable(type) {
+	try {
+		var storage = window[type], x = '__storage_test__';
+		storage.setItem(x, x);
+		storage.removeItem(x);
+		return true;
+	}
+	catch(e) { console.error(e); return false; }
+}
+// Удаление строки
 function deleteRow(evt) {
     $(evt.currentTarget).parent().parent().detach();
 }
@@ -82,18 +91,30 @@ function filechanged(evt) {
     var reader = new FileReader();
     reader.readAsDataURL(evt.currentTarget.files[0]);
     reader.onload = function () {
-        console.log(reader.result);
+        //console.log(reader.result);
         addInputRow('url', reader.result);
         $(evt.currentTarget).parent().detach();
     };
     reader.onerror = function (error) {
-        console.log('Error: ', error);
+        console.error('Error: ', error);
     };
 }
 // События
+$(document).ready(function(){
+    // Если не работает локальное хранилище, выключить кнопку сохранения
+    if (!storageAvailable('localStorage'))
+        $('#save-button')
+            .prop('disabled', true)
+            .attr('title', 'Ваш браузер не поддерживает сохранение в localStorage');
+    // Если все же работает...
+    else
+        // Попробовать получить сохраненные данные
+        if(localStorage.getItem('FOGConfig') !== null)
+            // Отобразить кнопку загрузки
+            $('#load-button').removeClass('d-none');
+});
 $('#add-url-field').click(function () { addInputRow('url'); });
 $('#add-file-field').click(function () { addInputRow('file'); });
-
 $('#generate').click(async function (evt) {
     // Получить количество снежинок
     let snowflakesLimit = $('#images-count').val()*1;
@@ -101,7 +122,7 @@ $('#generate').click(async function (evt) {
     // Получить текстовое представление массива
     let snowflakesArr_str = '';
     $('.url-field').each(function (idx, el) {
-        console.log($(el).val());
+        //console.log($(el).val());
         let urlValue = $(el).val();
         // Если строка не пустая, то добавить
         if(urlValue.length > 0) {
@@ -114,7 +135,7 @@ $('#generate').click(async function (evt) {
     });
     // Добавить всё в строку для вставки в srcdoc
     let file_str = `<html><head><style>${HEAD_STYLE}</style></head><body><script>var LIMIT = ${snowflakesLimit};var snowflakesArr = [${snowflakesArr_str}];${JS_FUNCS}` + '</s' + 'cript></body></html>';
-    console.log(file_str);
+    //console.log(file_str);
     $('#previewIFrame').attr('srcdoc', file_str);
     fileString = file_str;
     $('#downloadButton').removeAttr('disabled');
@@ -122,4 +143,67 @@ $('#generate').click(async function (evt) {
 $('#downloadButton').click(function (evt) {
     if(fileString.length > 0)
         download('falling_images.html', fileString);
+});
+// Сохранение формы
+$('#save-button').on('click', function (evt) {
+    // Определить объект конфигурации
+    let mainConfig = { 'urls': [] };
+    // Для каждого поля...
+    $('.url-field').each(function (idx, el) {
+        let value = $(el).val();
+        if(value != '') mainConfig.urls.push(value);
+    });
+    // Исключить сохранение пустого конфига
+    if (mainConfig.urls.length > 0)
+        localStorage.setItem('FOGConfig', JSON.stringify(mainConfig));
+});
+// Загрузка конфигурации
+$('#load-button').on('click', function (evt) {
+    // Получить конфигурацию
+    let mainConfig = JSON.parse(localStorage.getItem('FOGConfig'));
+    if(mainConfig.urls.length < 1) return;
+    // Очистить набор
+    $('#fields-collection').html('');
+    // Выполнить для каждого элемента
+    mainConfig.urls.forEach((item, i) => {
+        addInputRow('url', item);
+    });
+});
+// Экспорт конфигурации
+$('#export-button').on('click', function (evt) {
+    if(localStorage.getItem('FOGConfig') !== null)
+        download('FOGSettings.json', localStorage.getItem('FOGConfig'));
+    else
+        alert('Save config first!');
+});
+// Импорт конфигурации
+$('#import-button').on('click', function (evt) {
+    var input = document.createElement('input');
+    input.type = 'file';
+    input.onchange = e => {
+        // getting a hold of the file reference
+        var file = e.target.files[0];
+        // setting up the reader
+        var reader = new FileReader();
+        reader.readAsText(file, 'UTF-8');
+        // here we tell the reader what to do when it's done reading...
+        reader.onload = readerEvent => {
+            var content = readerEvent.target.result; // this is the content!
+            try {
+                let testObject = JSON.parse(content)
+                // Файл должен содержать нужные параметры
+                if(testObject['generationMethod']!='')
+                    localStorage.setItem('appConfig', content);
+                else
+                    throw 'Incorrect JSON';
+                // Отобразить кнопку загрузки и кликнуть по ней
+                $('#load-button')
+                    .removeClass('d-none')
+                    .click();
+            } catch (e) {
+                alert(e);
+            }
+        }
+    }
+    input.click();
 });
